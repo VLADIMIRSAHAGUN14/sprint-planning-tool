@@ -5,6 +5,7 @@ import BacklogItems from './components/BacklogItems';
 import TaskBreakdown from './components/TaskBreakdown';
 import SprintMetrics from './components/SprintMetrics';
 import DailyScrumBoard from './components/DailyScrumBoard';
+import SprintReview from './components/SprintReview'; // Añadido
 import './styles/App.css';
 
 function App() {
