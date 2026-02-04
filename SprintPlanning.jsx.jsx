@@ -1,15 +1,31 @@
 // src/components/SprintPlanning.jsx
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { sprintBacklogItems, teamMembers, definitionOfDone } from '../data/sprintData';
 
 const SprintPlanning = ({ data, setData }) => {
   const [selectedItems, setSelectedItems] = useState([]);
   const [sprintGoal, setSprintGoal] = useState('');
   const [capacityUsed, setCapacityUsed] = useState(0);
+  const [metrics, setMetrics] = useState({ 
+    totalPoints: 0, 
+    totalHours: 0, 
+    capacityPercentage: 0 
+  });
+
+  // Función para calcular métricas
+  const calculateMetrics = useCallback(() => {
+    const totalPoints = selectedItems.reduce((sum, item) => sum + (item.points || 0), 0);
+    const totalHours = selectedItems.reduce((sum, item) => sum + (item.estimatedHours || 0), 0);
+    const teamCapacity = data?.teamCapacity || 0;
+    const capacityPercentage = teamCapacity > 0 ? (totalHours / teamCapacity) * 100 : 0;
+    
+    return { totalPoints, totalHours, capacityPercentage };
+  }, [selectedItems, data?.teamCapacity]);
 
   useEffect(() => {
     // Cargar datos iniciales
-    setSprintGoal("Establecer los fundamentos de requerimientos, arquitectura técnica y planificación detallada necesarios para iniciar el desarrollo eficiente del sistema SmartRoute en sprints posteriores.");
+    const initialGoal = "Establecer los fundamentos de requerimientos, arquitectura técnica y planificación detallada necesarios para iniciar el desarrollo eficiente del sistema SmartRoute en sprints posteriores.";
+    setSprintGoal(initialGoal);
     
     const initialItems = sprintBacklogItems.filter(item => 
       ['SR-REQ-003', 'SR-REQ-004', 'SR-ALC-005', 'SR-PLN-002', 
@@ -20,20 +36,17 @@ const SprintPlanning = ({ data, setData }) => {
     // Actualizar datos globales
     setData(prev => ({
       ...prev,
-      sprintGoal: sprintGoal,
+      sprintGoal: initialGoal,
       selectedItems: initialItems
     }));
-  }, []);
+  }, [setData]);
 
-  const calculateMetrics = () => {
-    const totalPoints = selectedItems.reduce((sum, item) => sum + item.points, 0);
-    const totalHours = selectedItems.reduce((sum, item) => sum + item.estimatedHours, 0);
-    const capacityPercentage = (totalHours / data.teamCapacity) * 100;
-    
-    setCapacityUsed(capacityPercentage);
-    
-    return { totalPoints, totalHours, capacityPercentage };
-  };
+  // Actualizar métricas cuando cambian los items seleccionados
+  useEffect(() => {
+    const newMetrics = calculateMetrics();
+    setMetrics(newMetrics);
+    setCapacityUsed(newMetrics.capacityPercentage);
+  }, [selectedItems, calculateMetrics]);
 
   const toggleItemSelection = (itemId) => {
     setSelectedItems(prev => {
@@ -42,21 +55,42 @@ const SprintPlanning = ({ data, setData }) => {
         return prev.filter(item => item.id !== itemId);
       } else {
         const itemToAdd = sprintBacklogItems.find(item => item.id === itemId);
-        return [...prev, itemToAdd];
+        return itemToAdd ? [...prev, itemToAdd] : prev;
       }
     });
   };
 
-  const metrics = calculateMetrics();
+  // Manejar cambio en el objetivo del sprint
+  const handleSprintGoalChange = (e) => {
+    const newGoal = e.target.value;
+    setSprintGoal(newGoal);
+    setData(prev => ({ 
+      ...prev, 
+      sprintGoal: newGoal 
+    }));
+  };
+
+  // Función para guardar el plan
+  const saveSprintPlan = () => {
+    alert(`Sprint Planning Saved!\n\nSelected Items: ${selectedItems.length}\nTotal Points: ${metrics.totalPoints}\nCapacity Used: ${metrics.capacityPercentage.toFixed(1)}%`);
+    
+    // Aquí podrías añadir lógica para guardar en localStorage o API
+    localStorage.setItem('sprintPlan', JSON.stringify({
+      sprintGoal,
+      selectedItems,
+      metrics,
+      timestamp: new Date().toISOString()
+    }));
+  };
 
   return (
     <div className="sprint-planning">
       <div className="planning-header">
         <h2>Sprint 1 Planning Session</h2>
         <div className="sprint-info">
-          <span className="badge">Sprint #{data.sprintNumber}</span>
-          <span className="badge">{data.sprintDuration} days</span>
-          <span className="badge">{data.teamCapacity}h capacity</span>
+          <span className="badge">Sprint #{data?.sprintNumber || 1}</span>
+          <span className="badge">{data?.sprintDuration || 14} days</span>
+          <span className="badge">{data?.teamCapacity || 0}h capacity</span>
         </div>
       </div>
 
@@ -65,10 +99,7 @@ const SprintPlanning = ({ data, setData }) => {
         <textarea
           className="goal-textarea"
           value={sprintGoal}
-          onChange={(e) => {
-            setSprintGoal(e.target.value);
-            setData(prev => ({ ...prev, sprintGoal: e.target.value }));
-          }}
+          onChange={handleSprintGoalChange}
           rows="3"
           placeholder="Define the sprint goal here..."
         />
@@ -79,7 +110,7 @@ const SprintPlanning = ({ data, setData }) => {
         <div className="capacity-meter">
           <div 
             className="capacity-bar" 
-            style={{ width: `${metrics.capacityPercentage}%` }}
+            style={{ width: `${Math.min(metrics.capacityPercentage, 100)}%` }}
           >
             {metrics.capacityPercentage.toFixed(1)}%
           </div>
@@ -95,7 +126,9 @@ const SprintPlanning = ({ data, setData }) => {
           </div>
           <div className="stat">
             <span className="stat-label">Available:</span>
-            <span className="stat-value">{data.teamCapacity - metrics.totalHours}h</span>
+            <span className="stat-value">
+              {Math.max(0, (data?.teamCapacity || 0) - metrics.totalHours)}h
+            </span>
           </div>
         </div>
       </div>
@@ -109,26 +142,26 @@ const SprintPlanning = ({ data, setData }) => {
             return (
               <div 
                 key={item.id}
-                className={`backlog-item ${isSelected ? 'selected' : ''} priority-${item.priority.toLowerCase()}`}
+                className={`backlog-item ${isSelected ? 'selected' : ''} priority-${item.priority?.toLowerCase() || 'medium'}`}
                 onClick={() => toggleItemSelection(item.id)}
               >
                 <div className="item-header">
                   <input 
                     type="checkbox" 
                     checked={isSelected}
-                    onChange={() => {}}
+                    onChange={() => toggleItemSelection(item.id)}
                     className="item-checkbox"
                   />
                   <span className="item-id">{item.id}</span>
-                  <span className="item-points">{item.points} pts</span>
+                  <span className="item-points">{item.points || 0} pts</span>
                 </div>
-                <h4 className="item-title">{item.title}</h4>
-                <p className="item-description">{item.description}</p>
+                <h4 className="item-title">{item.title || 'Untitled Item'}</h4>
+                <p className="item-description">{item.description || ''}</p>
                 <div className="item-footer">
-                  <span className="item-priority">{item.priority}</span>
-                  <span className="item-hours">{item.estimatedHours}h</span>
+                  <span className="item-priority">{item.priority || 'MEDIUM'}</span>
+                  <span className="item-hours">{item.estimatedHours || 0}h</span>
                 </div>
-                {isSelected && (
+                {isSelected && item.acceptanceCriteria && (
                   <div className="item-acceptance">
                     <strong>Acceptance Criteria:</strong>
                     <ul>
@@ -149,11 +182,11 @@ const SprintPlanning = ({ data, setData }) => {
         <div className="team-grid">
           {teamMembers.map(member => (
             <div key={member.id} className="team-member">
-              <div className="member-avatar">{member.avatar}</div>
+              <div className="member-avatar">{member.avatar || '👤'}</div>
               <div className="member-info">
-                <h4>{member.name}</h4>
-                <p className="member-role">{member.role}</p>
-                <p className="member-capacity">{member.capacity}h available</p>
+                <h4>{member.name || 'Unnamed Member'}</h4>
+                <p className="member-role">{member.role || 'Team Member'}</p>
+                <p className="member-capacity">{member.capacity || 0}h available</p>
               </div>
               <div className="member-assignments">
                 {selectedItems
@@ -174,17 +207,22 @@ const SprintPlanning = ({ data, setData }) => {
         <div className="dod-list">
           {definitionOfDone.map((item, index) => (
             <div key={index} className="dod-item">
-              <input type="checkbox" id={`dod-${index}`} />
-              <label htmlFor={`dod-${index}`}>{item}</label>
+              <input 
+                type="checkbox" 
+                id={`dod-${index}`} 
+                onChange={(e) => {
+                  // Manejar cambio en checkbox DoD
+                  console.log(`DoD item ${index} checked:`, e.target.checked);
+                }}
+              />
+              <label htmlFor={`dod-${index}`}>{item || 'Empty DoD item'}</label>
             </div>
           ))}
         </div>
       </div>
 
       <div className="planning-actions">
-        <button className="btn btn-primary" onClick={() => {
-          alert(`Sprint Planning Saved!\n\nSelected Items: ${selectedItems.length}\nTotal Points: ${metrics.totalPoints}\nCapacity Used: ${metrics.capacityPercentage.toFixed(1)}%`);
-        }}>
+        <button className="btn btn-primary" onClick={saveSprintPlan}>
           💾 Save Sprint Plan
         </button>
         <button className="btn btn-secondary">
