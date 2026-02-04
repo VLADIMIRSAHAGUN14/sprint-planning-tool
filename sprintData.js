@@ -1,4 +1,3 @@
-// src/data/sprintData.js
 export const sprintBacklogItems = [
   {
     id: 'SR-REQ-003',
@@ -139,6 +138,14 @@ export const teamMembers = [
     avatar: 'BA',
     capacity: 80,
     color: '#8b5cf6'
+  },
+  {
+    id: 5,
+    name: '[Tech Lead]',
+    role: 'Technical Lead',
+    avatar: 'TL',
+    capacity: 80,
+    color: '#ef4444'
   }
 ];
 
@@ -171,7 +178,7 @@ export const taskBreakdown = {
     { description: 'Completar EDT nivel 3-4', hours: 12, owner: 'PM', day: 1, status: 'todo', progress: 0 },
     { description: 'Asignar responsables por paquete', hours: 6, owner: 'PM', day: 2, status: 'todo', progress: 0 },
     { description: 'Preparar presentación de socialización', hours: 4, owner: 'PM', day: 3, status: 'todo', progress: 0 },
-    { description: 'Conductir sesión de validación', hours: 3, owner: 'PM', day: 4, status: 'todo', progress: 0 }
+    { description: 'Conducir sesión de validación', hours: 3, owner: 'PM', day: 4, status: 'todo', progress: 0 }
   ],
   'SR-PLN-002': [
     { description: 'Definir fórmula y cálculo de ROI', hours: 6, owner: 'PO', day: 1, status: 'todo', progress: 0 },
@@ -202,4 +209,7 @@ export const taskBreakdown = {
 export const sprintEvents = [
   { name: 'Daily Scrum', frequency: 'Daily', time: '9:00 AM', duration: '15 min', participants: 'Whole Team' },
   { name: 'Sprint Review', frequency: 'End of Sprint', time: '10:00 AM', duration: '2 hours', participants: 'Stakeholders + Team' },
-  { name: 'Sprint Retrospective', frequency: 'End of Sprint', time: '2
+  { name: 'Sprint Retrospective', frequency: 'End of Sprint', time: '2:00 PM', duration: '1.5 hours', participants: 'Team Only' },
+  { name: 'Sprint Planning', frequency: 'Start of Sprint', time: '9:00 AM', duration: '3 hours', participants: 'Whole Team' },
+  { name: 'Backlog Grooming', frequency: 'Weekly', time: '3:00 PM', duration: '1 hour', participants: 'PO + SM + Team' }
+];
