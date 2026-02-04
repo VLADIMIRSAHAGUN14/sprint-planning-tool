@@ -1,0 +1,19 @@
+sprint-planning-tool/
+├── public/
+│   └── index.html
+├── src/
+│   ├── components/
+│   │   ├── SprintPlanning.jsx
+│   │   ├── BacklogItems.jsx
+│   │   ├── TaskBreakdown.jsx
+│   │   ├── SprintMetrics.jsx
+│   │   ├── DailyScrumBoard.jsx
+│   │   └── SprintReview.jsx
+│   ├── data/
+│   │   └── sprintData.js
+│   ├── styles/
+│   │   └── App.css
+│   ├── App.jsx
+│   └── index.js
+├── package.json
+└── README.md

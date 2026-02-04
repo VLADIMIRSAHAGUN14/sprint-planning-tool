@@ -1,0 +1,27 @@
+Instrucciones de Instalación y Uso
+Para ejecutar la aplicación:
+bash
+# 1. Crear proyecto React
+npx create-react-app sprint-planning-tool
+cd sprint-planning-tool
+
+# 2. Reemplazar los archivos con los proporcionados
+# (Copiar todos los archivos anteriores en sus respectivas carpetas)
+
+# 3. Instalar dependencias (si es necesario)
+npm install
+
+# 4. Iniciar la aplicación
+npm start
+Características de la aplicación:
+📋 Sprint Planning: Selección interactiva de backlog items
+
+📦 Backlog Items: Tabla completa con filtros y criterios de aceptación
+
+🔨 Task Breakdown: Desglose detallado de tareas con asignación
+
+📊 Metrics: Gráficos y estadísticas en tiempo real
+
+📅 Daily Scrum: Tablero para seguimiento diario
+
+✅ Review Prep: Preparación para Sprint Review
